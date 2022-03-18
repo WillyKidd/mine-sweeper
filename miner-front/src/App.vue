@@ -8,15 +8,22 @@
           </b-nav-item>
         </b-navbar-nav>
       </div>
-    </b-navbar>    
+    </b-navbar>
+    <div>
+      <GameBoard></GameBoard>
+    </div>    
   </div>
 </template>
 
 <script>
+import GameBoard from '@/components/GameBoard.vue'
 import { name, version } from '../package.json';
 
 export default {
   name: 'App',
+  components: {
+    GameBoard,
+  },
   data() {
     return {
       name,
@@ -26,6 +33,8 @@ export default {
   methods: {
     mmm() {
       this.$minerBack.greet()
+      let board = this.$minerBack.Board.new();
+      console.log(board);
     }
   }
 }

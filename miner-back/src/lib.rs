@@ -20,20 +20,22 @@ pub fn greet() {
     alert("OK");
 }
 
+#[derive(Copy, Clone)]
 enum CellState {
     Covered,
     Uncovered,
     Flagged,
 }
 
+#[derive(Copy, Clone)]
 struct Cell {
     state: CellState,
     is_bomb: bool,
     bomb_num: i32,
 }
 
-impl Default for Cell {
-    fn default() -> Cell {
+impl Cell {
+    fn new() -> Cell {
         Cell { 
             state: CellState::Covered,
             is_bomb: false,
@@ -85,6 +87,17 @@ impl Board {
 // public methods
 #[wasm_bindgen]
 impl Board {
+    pub fn new(row: i32, col: i32) -> Board {
+        Board {
+            row: row,
+            col: col,
+            flagcnt: 32,
+            time: 0,
+            state: GameState::Start,
+            cells: vec![vec![Cell::new(); row as usize]; col as usize],
+        }
+    }
+
     pub fn get_row(&self) -> i32 {
         self.row
     }
