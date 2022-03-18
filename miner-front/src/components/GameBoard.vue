@@ -3,23 +3,33 @@
     <p @click="mmm()">mmm</p>
     <div id="container">
       <div id="scoreContainer" class="buttonPressed">
-        <div id="face" class="buttonNormal" 
+        <div id="face" class="buttonNormal"
           @mousedown="e => buttonPress(e)"
           @mouseup="e => {
                       buttonRelease(e);
-                      getFace();
+                      getFace(0);
                     }"
           @mouseleave="e => buttonRelease(e)"
-        ></div>
+        >
+          <img :src='require(`@/assets/${faceType}.png`)' class="faceImg">
+        </div>
       </div>
       <div id="tableContainer">
         <table id="table">
           <tbody id="tableBody">
               <tr v-for="r in rowIndex" :key="r">
                   <td v-for="c in colIndex" :key="c" class="buttonNormal"
-                    @mousedown="e => buttonPress(e)"
-                    @mouseup="e => buttonRelease(e)"
-                    @mouseleave="e => buttonRelease(e)"
+                    @mousedown="e => {
+                      buttonPress(e);
+                      getFace(1);
+                    }"
+                    @mouseup="e => {
+                      buttonRelease(e);
+                      getFace(0);
+                    }"
+                    @mouseleave="e => {
+                      buttonRelease(e);
+                    }"
                   >
 
                   </td>
@@ -40,6 +50,8 @@ export default {
       row: 16,
       col: 16,
       board: this.$minerBack.Board.new(),
+      facePath: "../assets/grin0.png",
+      faceType: "grin0",
     }
   },
   computed: {
@@ -70,9 +82,22 @@ export default {
     buttonRelease(event) {
       event.target.classList.remove('buttonPressed');
     },
-    getFace() {
-      console.log("HERE!!!");
-      console.log(this.board.get_state());
+    getFace(type) {
+      const state = this.board.get_state();
+      const rand = Math.floor(Math.random() * 4)
+      if (state == this.$minerBack.GameState.Dead) {
+        this.faceType = "dead" + rand;
+        return;
+      }
+      if (state == this.$minerBack.GameState.Won) {
+        this.faceType = "win";
+        return;
+      }
+      if (type == 1) {
+        this.faceType = "oops" + rand;
+        return;
+      }
+      this.faceType = "grin" + rand;
     }
   }
 }
@@ -148,5 +173,10 @@ export default {
   border-left: solid 2.5px #666;
   border-right: solid 2.5px #eee;
   border-bottom: solid 2.5px #eee;
+}
+.faceImg {
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
 }
 </style>
