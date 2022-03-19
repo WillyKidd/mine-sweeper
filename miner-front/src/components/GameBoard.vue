@@ -7,6 +7,7 @@
           @mouseup="e => {
                       buttonRelease(e);
                       getFace(0);
+                      init(this.row, this.col, this.bombPercentage);
                     }"
           @mouseleave="e => buttonRelease(e)"
         >
@@ -40,6 +41,37 @@
         </table>  
       </div>
     </div>
+    <div id="optionTab">
+        <div id="optionContent">#Rows:</div>
+        <input v-model.lazy="rowInput" class="optionInput" placeholder="16" />
+        <div id="optionContent">#Columns:</div>
+        <input v-model.lazy="colInput" class="optionInput" placeholder="16" />
+        <div id="optionContent">%Bombs:</div>
+        <input v-model.lazy="bombPercentageInput" class="optionInput" placeholder="0-1" />
+        <div class="optionButton buttonNormal"
+          @mouseup.left="updateInit()"
+        >
+          customize
+        </div>
+        <div class="optionButton buttonNormal"
+          @mouseup.left="updateInit()"
+        >
+          beginner
+        </div>
+        <div class="optionButton buttonNormal"
+          @mouseup.left="updateInit()"
+        >
+          intermediate
+        </div>
+        <div class="optionButton buttonNormal"
+          @mouseup.left="updateInit()"
+        >
+          master
+        </div>
+    </div>
+    <div id="option">
+        <div>options</div>
+    </div>
   </div>
 </template>
 
@@ -51,25 +83,44 @@ export default {
     return {
       row: 16,
       col: 16,
-      board: this.$minerBack.Board.new(16, 16),
+      rowIndex: Array.from(Array(16).keys()),
+      colIndex: Array.from(Array(16).keys()),
+      bombPercentage: 0.3,
+      board: this.$minerBack.Board.new(16, 16, 0.3),
       faceType: "grin0",
+      rowInput: null,
+      colInput: null,
+      bombPercentageInput: null,
     }
   },
-  computed: {
-    rowIndex: function() {
-      return Array.from(Array(this.row).keys())
-    },
-    colIndex: function() {
-      console.log(this.col);
-      return Array.from(Array(this.col).keys())
-    },
-  },
   methods: {
+    boom() {
+      document.getElementById("tableBody").classList.add('noClick');
+      for (let i = 0; i < this.row; i++) {
+        for (let j = 0; j < this.col; j++) {
+          const ret = this.board.uncover(i, j);
+          if (ret == -1)
+            document.getElementById("tableBody").rows[i].cells[j].classList.add('boom', 'uncovered');
+        }
+      }
+    },
     buttonPress(event) {
       event.target.classList.add('buttonPressed');
     },
     buttonRelease(event) {
       event.target.classList.remove('buttonPressed');
+    },
+    clearStyle() {
+      for (let i = 0; i < this.row; i++) {
+        for (let j = 0; j < this.col; j++) {
+          const element = document.getElementById("tableBody").rows[i].cells[j];
+          element.classList.remove('boom', 'uncovered', 'boomRed', 
+            'flagged', 'bomb0', 'bomb1', 'bomb2', 'bomb3','bomb4', 
+            'bomb5', 'bomb6', 'bomb7', 'bomb8');
+          element.classList.add('bomb0');
+        }
+      }
+      document.getElementById("tableBody").classList.remove('noClick');
     },
     getFace(type) {
       const state = this.board.get_state();
@@ -88,6 +139,15 @@ export default {
       }
       this.faceType = "grin" + rand;
     },
+    init(row, col, bombPercentage) {
+      this.rowIndex = Array.from(Array(parseInt(row)).keys()),
+      this.colIndex = Array.from(Array(parseInt(col)).keys()),
+      console.log(this.colIndex);
+      this.board = this.$minerBack.Board.new(row, col, bombPercentage);
+      console.log(this.board.get_flagcnt());
+      this.clearStyle();
+      this.getFace(0);
+    },
     toggleFlag(row, col, e) {
       const cellState = this.board.toggle_flag(row, col);
       if (cellState == this.$minerBack.CellState.Flagged) {
@@ -97,7 +157,6 @@ export default {
       }
     },
     uncover(row, col) {
-      console.log(row, col);
       const ret = this.board.uncover(row, col);
       const element = document.getElementById("tableBody").rows[row].cells[col];
       if (ret >= 0) {
@@ -116,32 +175,58 @@ export default {
         for (let i = Math.max(r-1, 0); i <= Math.min(r+1, this.row-1); i++) {
           for (let j = Math.max(c-1, 0); j <= Math.min(c+1, this.col-1); j++) {
             if (i == r && j == c) continue;
-            console.log(i, j);
             this.uncoverWrap(i, j)
           }
         }
       }
-    },
-    boom() {
-      for (let i = 0; i < this.row; i++) {
-        for (let j = 0; j < this.row; j++) {
-          const ret = this.board.uncover(i, j);
-          if (ret == -1)
-            document.getElementById("tableBody").rows[i].cells[j].classList.add('boom', 'uncovered');
-        }
+      if (this.board.get_state() == this.$minerBack.Board.Won) {
+        this.faceType = "win";
+        document.getElementById("tableBody").classList.add('noClick');
       }
+    },
+    updateInit() {
+      const r = parseInt(this.rowInput, 10);
+      const c = parseInt(this.rowInput, 10);
+      const bp = parseFloat(this.bombPercentageInput);
+      if (isNaN(r) || isNaN(c) || isNaN(bp)) {
+        alert("Please check your inputs.");
+        return;
+      } else if (bp < 0 || bp > 1) {
+        alert("%Bombs: enter a number in range [0, 1].");
+        return;
+      }
+      this.clearStyle();
+      this.row = r;
+      this.col = c;
+      this.bombPercentage = bp;
+      let width = 25 * c;
+      let height = 25 * r; 
+      document.getElementById("tableContainer").style.width = `${width}px`;
+      document.getElementById("tableContainer").style.height = `${height}px`;
+      width += 40;
+      height += 100;
+      document.getElementById("container").style.width = `${width}px`;
+      document.getElementById("container").style.height = `${height}px`;
+      this.getFace(0);
+      this.init(r, c, bp);
     }
   }
 }
 </script>
 
-<style>
+<style>   
 #container {
+  vertical-align: top;
   box-sizing: border-box;
   text-align: center;
   width: 440px;
-  height: 800px;
-  margin: auto;
+  height: 500px;
+  margin-top: 30px;
+  margin-left: auto;
+  margin-right:auto;
+  left: 0;
+  right: 0;
+  position: absolute;
   justify-content: center;
   padding: 7px;
   border-top: solid 4px #eee;
@@ -190,6 +275,46 @@ export default {
   margin-left: auto;
   margin-right: auto;
 }
+#option {
+  text-align: center;
+  position: absolute;
+  display: inline;
+  margin-top: 30px;
+  margin-left: 112.5px;
+  padding-right: 8px;
+  width:40px;
+  height:70px;
+  text-orientation: sideways;
+  writing-mode: vertical-rl;
+  background:#ccc;
+  border-top: solid 2.5px #eee;
+  border-right: solid 2.5px #666;
+  border-bottom: solid 2.5px #666;
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+  cursor: pointer;
+}
+#optionTab {
+  vertical-align: top;
+  text-align: left;
+  text-decoration: none;
+  display: inline-flex;
+  position: absolute;
+  margin-top: 30px;
+  width:115px;
+  height:320px;
+  writing-mode: vertical-rl;
+  background:#ccc;
+  border-top: solid 2.5px #eee;
+  border-bottom: solid 2.5px #666;
+  border-right: solid 2.5px #666;
+  border-bottom-right-radius: 5px;
+}
+#optionContent {
+  text-align: left;
+  writing-mode: horizontal-tb;
+  margin-left: 5px;
+}
 .scoreElements {
   position: relative;
 }
@@ -215,6 +340,7 @@ export default {
   background-position: center;  
   background-repeat: no-repeat;
   background-size: 80%;
+  cursor: pointer;
 }
 .faceImg {
   max-width: 100%;
@@ -227,6 +353,18 @@ export default {
   max-height: 80%;
   display: block;
   margin: auto;
+}
+.optionInput {
+  width: 105px;
+  margin-right: 5px;
+}
+.optionButton {
+  margin-top: 5px;
+  margin-right: 8px;
+  text-align: center;
+  writing-mode: horizontal-tb;
+  width: 100px;
+  height: 30px;
 }
 .bomb0 {
   background-image: url('../assets/num/0.png');
@@ -270,5 +408,6 @@ export default {
 }
 .uncovered {
   border: none;
+  cursor: default;
 }
 </style>

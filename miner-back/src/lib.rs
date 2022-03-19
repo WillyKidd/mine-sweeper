@@ -59,6 +59,7 @@ pub struct Board {
     col: i32,
     flagcnt: i32,
     foundcnt: i32,
+    bombcnt: i32,
     time: i32,
     state: GameState,
     cells: Vec<Vec<Cell>>,
@@ -88,12 +89,13 @@ impl Board {
 // public methods
 #[wasm_bindgen]
 impl Board {
-    pub fn new(row: i32, col: i32) -> Board {
+    pub fn new(row: i32, col: i32, bomb_percentage: f64) -> Board {
         let mut board: Board = Board {
             row: row,
             col: col,
-            flagcnt: 32,
+            flagcnt: (((row*col) as f64)*bomb_percentage) as i32,
             foundcnt: 0,
+            bombcnt: (((row*col) as f64)*bomb_percentage) as i32,
             time: 0,
             state: GameState::Start,
             cells: vec![vec![Cell::new(); row as usize]; col as usize],
