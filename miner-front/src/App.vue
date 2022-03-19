@@ -18,7 +18,6 @@
 <script>
 import GameBoard from '@/components/GameBoard.vue'
 import { name, version } from '../package.json';
-
 export default {
   name: 'App',
   components: {

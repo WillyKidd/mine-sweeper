@@ -27,6 +27,7 @@
                       uncoverWrap(r, c);
                       buttonRelease(e);
                       getFace(0);
+                      e.target.classList.add('noClick');
                     }"
                     @mouseout="e => {
                       buttonRelease(e);
@@ -49,22 +50,38 @@
         <div id="optionContent">%Bombs:</div>
         <input v-model.lazy="bombPercentageInput" class="optionInput" placeholder="0-1" />
         <div class="optionButton buttonNormal"
-          @mouseup.left="updateInit()"
+          @mousedown="e => buttonPress(e)"
+          @mouseup.left="e => {
+            buttonRelease(e);
+            updateInit();
+          }"
         >
           customize
         </div>
         <div class="optionButton buttonNormal"
-          @mouseup.left="updateInit()"
+          @mousedown="e => buttonPress(e)"
+          @mouseup.left="e => {
+            buttonRelease(e);
+            updateInit();
+          }"
         >
           beginner
         </div>
         <div class="optionButton buttonNormal"
-          @mouseup.left="updateInit()"
+          @mousedown="e => buttonPress(e)"
+          @mouseup.left="e => {
+            buttonRelease(e);
+            updateInit();
+          }"
         >
           intermediate
         </div>
         <div class="optionButton buttonNormal"
-          @mouseup.left="updateInit()"
+          @mousedown="e => buttonPress(e)"
+          @mouseup.left="e => {
+            buttonRelease(e);
+            updateInit();
+          }"
         >
           master
         </div>
@@ -76,6 +93,10 @@
 </template>
 
 <script>
+import Vue from 'vue'
+import VueConfetti from 'vue-confetti'
+
+Vue.use(VueConfetti)
 
 export default {
   name: 'GameBoard',
@@ -85,7 +106,7 @@ export default {
       col: 16,
       rowIndex: Array.from(Array(16).keys()),
       colIndex: Array.from(Array(16).keys()),
-      bombPercentage: 0.3,
+      bombPercentage: 0.15,
       board: this.$minerBack.Board.new(16, 16, 0.3),
       faceType: "grin0",
       rowInput: null,
@@ -99,8 +120,14 @@ export default {
       for (let i = 0; i < this.row; i++) {
         for (let j = 0; j < this.col; j++) {
           const ret = this.board.uncover(i, j);
-          if (ret == -1)
-            document.getElementById("tableBody").rows[i].cells[j].classList.add('boom', 'uncovered');
+          if (ret == -1) {
+            const element = document.getElementById("tableBody").rows[i].cells[j];
+            if (element.classList.contains('flagged')) {
+              element.classList.remove('flagged');
+            } else {
+              element.classList.add('boom', 'uncovered');
+            }
+          }
         }
       }
     },
@@ -116,7 +143,7 @@ export default {
           const element = document.getElementById("tableBody").rows[i].cells[j];
           element.classList.remove('boom', 'uncovered', 'boomRed', 
             'flagged', 'bomb0', 'bomb1', 'bomb2', 'bomb3','bomb4', 
-            'bomb5', 'bomb6', 'bomb7', 'bomb8');
+            'bomb5', 'bomb6', 'bomb7', 'bomb8', 'noClick');
           element.classList.add('bomb0');
         }
       }
@@ -131,6 +158,8 @@ export default {
       }
       if (state == this.$minerBack.GameState.Won) {
         this.faceType = "win";
+        document.getElementById("tableBody").classList.add('noClick');
+        this.$confetti.start();
         return;
       }
       if (type == 1) {
@@ -140,6 +169,7 @@ export default {
       this.faceType = "grin" + rand;
     },
     init(row, col, bombPercentage) {
+      this.$confetti.stop();
       this.rowIndex = Array.from(Array(parseInt(row)).keys()),
       this.colIndex = Array.from(Array(parseInt(col)).keys()),
       console.log(this.colIndex);
@@ -169,8 +199,10 @@ export default {
       return ret;
     },
     uncoverWrap(r, c) {
+      console.log("uncoverWrap: ", r, " ", c);
       const ret = this.uncover(r, c);
       if (ret == -2) return;
+      if (ret == -1) return;
       if (ret == 0) {
         for (let i = Math.max(r-1, 0); i <= Math.min(r+1, this.row-1); i++) {
           for (let j = Math.max(c-1, 0); j <= Math.min(c+1, this.col-1); j++) {
@@ -182,11 +214,12 @@ export default {
       if (this.board.get_state() == this.$minerBack.Board.Won) {
         this.faceType = "win";
         document.getElementById("tableBody").classList.add('noClick');
+        this.$confetti.start();
       }
     },
     updateInit() {
       const r = parseInt(this.rowInput, 10);
-      const c = parseInt(this.rowInput, 10);
+      const c = parseInt(this.colInput, 10);
       const bp = parseFloat(this.bombPercentageInput);
       if (isNaN(r) || isNaN(c) || isNaN(bp)) {
         alert("Please check your inputs.");
@@ -274,6 +307,7 @@ export default {
   height: 35px;
   margin-left: auto;
   margin-right: auto;
+  cursor: pointer;
 }
 #option {
   text-align: center;
@@ -365,6 +399,7 @@ export default {
   writing-mode: horizontal-tb;
   width: 100px;
   height: 30px;
+  cursor: pointer;
 }
 .bomb0 {
   background-image: url('../assets/num/0.png');

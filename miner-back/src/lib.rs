@@ -44,7 +44,7 @@ impl Cell {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 #[wasm_bindgen]
 pub enum GameState {
     Start,
@@ -164,6 +164,9 @@ impl Board {
             return -1
         }
         self.foundcnt += 1;
+        if self.foundcnt == self.row * self.col - self.bombcnt && self.state != GameState::Dead{
+            self.state = GameState::Won;
+        }
         self.cells[x as usize][y as usize].bomb_num
     }
 }
