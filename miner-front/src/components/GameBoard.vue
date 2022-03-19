@@ -2,6 +2,10 @@
   <div>
     <div id="container">
       <div id="scoreContainer" class="buttonPressed">
+        <div id="flag">
+          <span class="flagged">"       : " </span>
+          <span id="flagIndicator" class="buttonPressed">Flags</span>
+        </div>
         <div id="face" class="buttonNormal"
           @mousedown="e => buttonPress(e)"
           @mouseup="e => {
@@ -308,6 +312,23 @@ export default {
   margin-left: auto;
   margin-right: auto;
   cursor: pointer;
+}
+#flag {
+  float: left;
+  margin-top: 8px;
+  margin-left: 2px;
+}
+#flagIndicator {
+  user-select: none;
+  text-align: left;
+  margin: 0;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  font-family: "Courier New",monospace;
+  font-weight: 800;
+  background: rgb(37, 37, 37);
+  color: #fbff1b;
+  padding: 2px;
 }
 #option {
   text-align: center;
