@@ -141,6 +141,9 @@ impl Board {
     pub fn toggle_flag(&mut self, x: i32, y: i32) -> CellState {
         self.cells[x as usize][y as usize].state = match self.cells[x as usize][y as usize].state {
             CellState::Covered => {
+                if self.flagcnt == 0 {
+                    return CellState::Covered
+                }
                 self.flagcnt -= 1;
                 CellState::Flagged
             },

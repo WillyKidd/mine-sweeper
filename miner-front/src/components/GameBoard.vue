@@ -3,8 +3,7 @@
     <div id="container">
       <div id="scoreContainer" class="buttonPressed">
         <div id="flag">
-          <span class="flagged">"       : " </span>
-          <span id="flagIndicator" class="buttonPressed">Flags</span>
+          <span id="flagIndicator" class="buttonPressed">{{ this.flagStr }}</span>
         </div>
         <div id="face" class="buttonNormal"
           @mousedown="e => buttonPress(e)"
@@ -111,11 +110,12 @@ export default {
       rowIndex: Array.from(Array(16).keys()),
       colIndex: Array.from(Array(16).keys()),
       bombPercentage: 0.15,
-      board: this.$minerBack.Board.new(16, 16, 0.3),
+      board: this.$minerBack.Board.new(16, 16, 0.15),
       faceType: "grin0",
       rowInput: null,
       colInput: null,
       bombPercentageInput: null,
+      flagStr: "0038",
     }
   },
   methods: {
@@ -128,6 +128,7 @@ export default {
             const element = document.getElementById("tableBody").rows[i].cells[j];
             if (element.classList.contains('flagged')) {
               element.classList.remove('flagged');
+              element.classList.add('boom2', 'uncovered');
             } else {
               element.classList.add('boom', 'uncovered');
             }
@@ -147,7 +148,7 @@ export default {
           const element = document.getElementById("tableBody").rows[i].cells[j];
           element.classList.remove('boom', 'uncovered', 'boomRed', 
             'flagged', 'bomb0', 'bomb1', 'bomb2', 'bomb3','bomb4', 
-            'bomb5', 'bomb6', 'bomb7', 'bomb8', 'noClick');
+            'bomb5', 'bomb6', 'bomb7', 'bomb8', 'noClick', 'boom2');
           element.classList.add('bomb0');
         }
       }
@@ -180,15 +181,18 @@ export default {
       this.board = this.$minerBack.Board.new(row, col, bombPercentage);
       console.log(this.board.get_flagcnt());
       this.clearStyle();
+      this.updateFlagCnt();
       this.getFace(0);
     },
     toggleFlag(row, col, e) {
       const cellState = this.board.toggle_flag(row, col);
       if (cellState == this.$minerBack.CellState.Flagged) {
+        console.log("ok");
         e.target.classList.add(`flagged`);
       } else if (cellState == this.$minerBack.CellState.Covered) {
         e.target.classList.remove(`flagged`);
       }
+      this.updateFlagCnt();
     },
     uncover(row, col) {
       const ret = this.board.uncover(row, col);
@@ -220,6 +224,10 @@ export default {
         document.getElementById("tableBody").classList.add('noClick');
         this.$confetti.start();
       }
+    },
+    updateFlagCnt() {
+      const flagCnt = this.board.get_flagcnt();
+      this.flagStr = ("000" + flagCnt).slice(-4);
     },
     updateInit() {
       const r = parseInt(this.rowInput, 10);
@@ -315,19 +323,22 @@ export default {
 }
 #flag {
   float: left;
+  display: inline;
   margin-top: 8px;
   margin-left: 2px;
 }
 #flagIndicator {
+  margin-left: 10px;
+  display: inline;
+  position: relative;
   user-select: none;
-  text-align: left;
-  margin: 0;
+  text-align: center;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
-  font-family: "Courier New",monospace;
+  font-family: "Courier New", monospace;
   font-weight: 800;
   background: rgb(37, 37, 37);
-  color: #fbff1b;
+  color: #ffdd1b;
   padding: 2px;
 }
 #option {
@@ -451,6 +462,9 @@ export default {
 }
 .boom {
   background-image: url('../assets/num/9.png');
+}
+.boom2 {
+  background-image: url('../assets/num/11.png');
 }
 .boomRed {
   background-color: red;
