@@ -65,7 +65,7 @@
           @mousedown="e => buttonPress(e)"
           @mouseup.left="e => {
             buttonRelease(e);
-            updateInit();
+            updateInit(1);
           }"
         >
           beginner
@@ -74,7 +74,7 @@
           @mousedown="e => buttonPress(e)"
           @mouseup.left="e => {
             buttonRelease(e);
-            updateInit();
+            updateInit(2);
           }"
         >
           intermediate
@@ -83,13 +83,17 @@
           @mousedown="e => buttonPress(e)"
           @mouseup.left="e => {
             buttonRelease(e);
-            updateInit();
+            updateInit(3);
           }"
         >
           master
         </div>
     </div>
-    <div id="option">
+    <div 
+      id="optionShow" 
+      @mouseup.left="e => {
+        toggleOption();
+      }">
         <div>options</div>
     </div>
   </div>
@@ -116,6 +120,7 @@ export default {
       colInput: null,
       bombPercentageInput: null,
       flagStr: "0038",
+      optionShown: true,
     }
   },
   methods: {
@@ -194,6 +199,17 @@ export default {
       }
       this.updateFlagCnt();
     },
+    toggleOption() {
+      if (this.optionShown) {
+        document.getElementById("optionTab").style.visibility = `hidden`;
+        document.getElementById("optionShow").style.marginLeft = `0`;
+        this.optionShown = false;
+      } else {
+        document.getElementById("optionTab").style.visibility = `visible`;
+        document.getElementById("optionShow").style.marginLeft = `112.5px`;
+        this.optionShown = true;
+      }
+    },
     uncover(row, col) {
       const ret = this.board.uncover(row, col);
       const element = document.getElementById("tableBody").rows[row].cells[col];
@@ -229,12 +245,32 @@ export default {
       const flagCnt = this.board.get_flagcnt();
       this.flagStr = ("000" + flagCnt).slice(-4);
     },
-    updateInit() {
-      const r = parseInt(this.rowInput, 10);
-      const c = parseInt(this.colInput, 10);
-      const bp = parseFloat(this.bombPercentageInput);
-      if (isNaN(r) || isNaN(c) || isNaN(bp)) {
-        alert("Please check your inputs.");
+    updateBeginner() {
+      this.rowInput = "8";
+      this.colInput = "8";
+      this.bombPercentageInput = "0.15";
+    },
+    updateInit(type=0) {
+      let r, c, bp;
+      if (type == 0) {
+        r = parseInt(this.rowInput, 10);
+        c = parseInt(this.colInput, 10);
+        bp = parseFloat(this.bombPercentageInput);
+      } else if (type == 1) {
+        r = 8;
+        c = 8;
+        bp = 0.15;
+      } else if (type == 2) {
+        r = 16;
+        c = 16;
+        bp = 0.15;
+      } else if (type == 3) {
+        r = 32;
+        c = 32;
+        bp = 0.15;
+      }
+      if (isNaN(r) || isNaN(c) || isNaN(bp) || r < 7 || c < 7) {
+        alert("Please check your inputs, #row and #col must >= 7.");
         return;
       } else if (bp < 0 || bp > 1) {
         alert("%Bombs: enter a number in range [0, 1].");
@@ -252,6 +288,8 @@ export default {
       height += 100;
       document.getElementById("container").style.width = `${width}px`;
       document.getElementById("container").style.height = `${height}px`;
+      const scWidth = Math.min(width-40, 400);
+      document.getElementById("scoreContainer").style.width = `${scWidth}px`;
       this.getFace(0);
       this.init(r, c, bp);
     }
@@ -341,7 +379,7 @@ export default {
   color: #ffdd1b;
   padding: 2px;
 }
-#option {
+#optionShow {
   text-align: center;
   position: absolute;
   display: inline;
@@ -361,6 +399,7 @@ export default {
   cursor: pointer;
 }
 #optionTab {
+  visibility: visible;
   vertical-align: top;
   text-align: left;
   text-decoration: none;
@@ -423,6 +462,7 @@ export default {
 .optionInput {
   width: 105px;
   margin-right: 5px;
+  writing-mode: horizontal-tb;
 }
 .optionButton {
   margin-top: 5px;
