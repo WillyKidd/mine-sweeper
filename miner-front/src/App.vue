@@ -17,7 +17,7 @@
         <ul class="navbar-nav mr-auto">
           <li class="nav-item active"> <a class="nav-link" href="https://willykidd.github.io/index.html">Home <span class="sr-only">(current)</span></a> </li>
           <li class="nav-item"> <a class="nav-link" href="https://willykidd.github.io/flight.html">My Past Flights</a> </li>
-          <li class="nav-item"> <a class="nav-link" href="https://willykidd.github.io/mine-sweeper/">Game</a> </li>
+          <li class="nav-item"> <a class="nav-link" href="https://willykidd.github.io/mine-sweeper/">Game: Mine Sweeping</a> </li>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Dropdown </a>
             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
@@ -66,5 +66,8 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;
   margin-top: 40px;
+}
+#back {
+  background-color: rgba(255, 160, 122, 0.2);
 }
 </style>

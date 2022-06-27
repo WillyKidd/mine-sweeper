@@ -8,11 +8,11 @@
         <div id="face" class="buttonNormal"
           @mousedown="e => buttonPress(e)"
           @mouseup="e => {
-                      buttonRelease(e);
+                      buttonReleaseFace(e);
                       getFace(0);
                       init(this.row, this.col, this.bombPercentage);
                     }"
-          @mouseleave="e => buttonRelease(e)"
+          @mouseleave="e => buttonReleaseFace(e)"
         >
           <img :src='require(`@/assets/emoji/${faceType}.png`)' class="faceImg">
         </div>
@@ -33,7 +33,7 @@
                       e.target.classList.add('noClick');
                     }"
                     @mouseout="e => {
-                      buttonRelease(e);
+                      buttonReleaseFace(e);
                     }"
                     @mouseup.right="e => {
                       toggleFlag(r, c, e);
@@ -47,15 +47,15 @@
     </div>
     <div id="optionTab">
         <div id="optionContent">#Rows:</div>
-        <input v-model.lazy="rowInput" class="optionInput" placeholder="16" />
+        <input v-model.lazy="rowInput" class="optionInput" placeholder=">=7" />
         <div id="optionContent">#Columns:</div>
-        <input v-model.lazy="colInput" class="optionInput" placeholder="16" />
+        <input v-model.lazy="colInput" class="optionInput" placeholder=">=7" />
         <div id="optionContent">%Bombs:</div>
         <input v-model.lazy="bombPercentageInput" class="optionInput" placeholder="0-1" />
         <div class="optionButton buttonNormal"
           @mousedown="e => buttonPress(e)"
           @mouseup.left="e => {
-            buttonRelease(e);
+            buttonReleaseFace(e);
             updateInit();
           }"
         >
@@ -64,7 +64,7 @@
         <div class="optionButton buttonNormal"
           @mousedown="e => buttonPress(e)"
           @mouseup.left="e => {
-            buttonRelease(e);
+            buttonReleaseFace(e);
             updateInit(1);
           }"
         >
@@ -73,7 +73,7 @@
         <div class="optionButton buttonNormal"
           @mousedown="e => buttonPress(e)"
           @mouseup.left="e => {
-            buttonRelease(e);
+            buttonReleaseFace(e);
             updateInit(2);
           }"
         >
@@ -82,7 +82,7 @@
         <div class="optionButton buttonNormal"
           @mousedown="e => buttonPress(e)"
           @mouseup.left="e => {
-            buttonRelease(e);
+            buttonReleaseFace(e);
             updateInit(3);
           }"
         >
@@ -133,9 +133,9 @@ export default {
             const element = document.getElementById("tableBody").rows[i].cells[j];
             if (element.classList.contains('flagged')) {
               element.classList.remove('flagged');
-              element.classList.add('boom2', 'uncovered');
+              element.classList.add('boom2', 'uncovered', 'noselect');
             } else {
-              element.classList.add('boom', 'uncovered');
+              element.classList.add('boom', 'uncovered', 'noselect');
             }
           }
         }
@@ -146,6 +146,10 @@ export default {
     },
     buttonRelease(event) {
       event.target.classList.remove('buttonPressed');
+      event.target.classList.add('noselect');
+    },
+    buttonReleaseFace(event) {
+      event.target.classList.remove('buttonPressed');
     },
     clearStyle() {
       for (let i = 0; i < this.row; i++) {
@@ -153,7 +157,7 @@ export default {
           const element = document.getElementById("tableBody").rows[i].cells[j];
           element.classList.remove('boom', 'uncovered', 'boomRed', 
             'flagged', 'bomb0', 'bomb1', 'bomb2', 'bomb3','bomb4', 
-            'bomb5', 'bomb6', 'bomb7', 'bomb8', 'noClick', 'boom2');
+            'bomb5', 'bomb6', 'bomb7', 'bomb8', 'noClick', 'boom2', 'noselect');
           element.classList.add('bomb0');
         }
       }
@@ -214,16 +218,16 @@ export default {
       const ret = this.board.uncover(row, col);
       const element = document.getElementById("tableBody").rows[row].cells[col];
       if (ret >= 0) {
-        element.classList.add(`bomb${ret}`, 'uncovered');
+        element.classList.add(`bomb${ret}`, 'uncovered', 'noselect');
       }
       else if (ret == -1) {
-        element.classList.add('boom', 'uncovered', 'boomRed');
+        element.classList.add('boom', 'uncovered', 'boomRed', 'noselect');
         this.boom();
       }
       return ret;
     },
     uncoverWrap(r, c) {
-      console.log("uncoverWrap: ", r, " ", c);
+      // console.log("uncoverWrap: ", r, " ", c);
       const ret = this.uncover(r, c);
       if (ret == -2) return;
       if (ret == -1) return;
@@ -297,7 +301,7 @@ export default {
 }
 </script>
 
-<style>   
+<style>
 #container {
   vertical-align: top;
   box-sizing: border-box;
@@ -328,6 +332,7 @@ export default {
   text-align: center;
   position: relative;
   top: 20px;
+  background-color: #aaa;
 }
 #table {
   display: table;
@@ -348,6 +353,7 @@ export default {
   text-align: center;
   margin-left: auto;
   margin-right: auto;
+  background-color: #aaa;
 }
 #face {
   position: relative;
@@ -358,6 +364,7 @@ export default {
   margin-left: auto;
   margin-right: auto;
   cursor: pointer;
+  text-decoration: none;
 }
 #flag {
   float: left;
@@ -398,6 +405,9 @@ export default {
   border-bottom-right-radius: 10px;
   cursor: pointer;
 }
+#optionShow:hover {
+  background: #bbb;
+}
 #optionTab {
   visibility: visible;
   vertical-align: top;
@@ -429,6 +439,9 @@ export default {
   border-right: solid 2.5px #666;
   border-bottom: solid 2.5px #666;
   border-radius: 3px;
+}
+.buttonNormal:hover {
+  background: #999;
 }
 .buttonPressed {
   border-top: solid 2.5px #666;
@@ -515,6 +528,16 @@ export default {
 }
 .noClick {
    pointer-events: none;
+}
+.noselect {
+  pointer-events: none;
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
 }
 .uncovered {
   border: none;
