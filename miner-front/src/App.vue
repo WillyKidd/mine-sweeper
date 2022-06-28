@@ -1,7 +1,3 @@
-<style>
-  @import './assets/css/styles.css';
-</style>
-
 <template>
   <div>
     <head>
@@ -60,6 +56,7 @@ export default {
 </script>
 
 <style>
+@import './assets/css/styles.css';
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
