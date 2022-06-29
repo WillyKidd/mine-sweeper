@@ -394,7 +394,7 @@ export default {
 #optionShow {
   -webkit-margin-start: 112.5px;
   text-align: center;
-  position: absolute;
+  position: fixed;
   display: inline;
   margin-top: 30px;
   margin-left: 112.5px;
@@ -422,7 +422,7 @@ export default {
   text-align: left;
   text-decoration: none;
   display: inline-flex;
-  position: absolute;
+  position: fixed;
   margin-top: 30px;
   width:115px;
   height:320px;
