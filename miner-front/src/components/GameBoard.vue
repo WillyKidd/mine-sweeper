@@ -5,16 +5,17 @@
         <div id="flag">
           <span id="flagIndicator" class="buttonPressed">{{ this.flagStr }}</span>
         </div>
-        <div id="face" class="buttonNormal"
-          @mousedown="e => buttonPress(e)"
-          @mouseup="e => {
-                      buttonReleaseFace(e);
-                      getFace(0);
-                      init(this.row, this.col, this.bombPercentage);
-                    }"
-          @mouseleave="e => buttonReleaseFace(e)"
-        >
-          <img :src='require(`@/assets/emoji/${faceType}.png`)' class="faceImg">
+        <div id="face" class="noSelect">
+          <img :src='require(`@/assets/emoji/${faceType}.png`)' 
+            class="faceImg, noSelect, buttonNormal"
+            @mousedown="e => buttonPress(e)"
+            @mouseup="e => {
+                        buttonRelease(e);
+                        getFace(0);
+                        init(this.row, this.col, this.bombPercentage);
+                      }"
+            @mouseleave="e => buttonRelease(e)"
+          >
         </div>
       </div>
       <div id="tableContainer">
@@ -27,13 +28,16 @@
                       getFace(1);
                     }"
                     @mouseup.left="e => {
+                      if (e.target.classList.contains('flagged')) {
+                        return;
+                      }
                       uncoverWrap(r, c);
-                      buttonRelease(e);
+                      buttonReleaseCell(e);
                       getFace(0);
                       e.target.classList.add('noClick');
                     }"
                     @mouseout="e => {
-                      buttonReleaseFace(e);
+                      buttonRelease(e);
                     }"
                     @mouseup.right="e => {
                       toggleFlag(r, c, e);
@@ -55,7 +59,7 @@
         <div class="optionButton buttonNormal"
           @mousedown="e => buttonPress(e)"
           @mouseup.left="e => {
-            buttonReleaseFace(e);
+            buttonRelease(e);
             updateInit();
           }"
         >
@@ -64,7 +68,7 @@
         <div class="optionButton buttonNormal"
           @mousedown="e => buttonPress(e)"
           @mouseup.left="e => {
-            buttonReleaseFace(e);
+            buttonRelease(e);
             updateInit(1);
           }"
         >
@@ -73,7 +77,7 @@
         <div class="optionButton buttonNormal"
           @mousedown="e => buttonPress(e)"
           @mouseup.left="e => {
-            buttonReleaseFace(e);
+            buttonRelease(e);
             updateInit(2);
           }"
         >
@@ -82,7 +86,7 @@
         <div class="optionButton buttonNormal"
           @mousedown="e => buttonPress(e)"
           @mouseup.left="e => {
-            buttonReleaseFace(e);
+            buttonRelease(e);
             updateInit(3);
           }"
         >
@@ -133,9 +137,9 @@ export default {
             const element = document.getElementById("tableBody").rows[i].cells[j];
             if (element.classList.contains('flagged')) {
               element.classList.remove('flagged');
-              element.classList.add('boom2', 'uncovered', 'noselect');
+              element.classList.add('boom2', 'uncovered', 'noSelect', 'noClick');
             } else {
-              element.classList.add('boom', 'uncovered', 'noselect');
+              element.classList.add('boom', 'uncovered', 'noSelect', 'noClick');
             }
           }
         }
@@ -144,11 +148,11 @@ export default {
     buttonPress(event) {
       event.target.classList.add('buttonPressed');
     },
-    buttonRelease(event) {
+    buttonReleaseCell(event) {
       event.target.classList.remove('buttonPressed');
-      event.target.classList.add('noselect');
+      event.target.classList.add('noSelect', 'noClick');
     },
-    buttonReleaseFace(event) {
+    buttonRelease(event) {
       event.target.classList.remove('buttonPressed');
     },
     clearStyle() {
@@ -157,7 +161,7 @@ export default {
           const element = document.getElementById("tableBody").rows[i].cells[j];
           element.classList.remove('boom', 'uncovered', 'boomRed', 
             'flagged', 'bomb0', 'bomb1', 'bomb2', 'bomb3','bomb4', 
-            'bomb5', 'bomb6', 'bomb7', 'bomb8', 'noClick', 'boom2', 'noselect');
+            'bomb5', 'bomb6', 'bomb7', 'bomb8', 'noClick', 'boom2', 'noSelect');
           element.classList.add('bomb0');
         }
       }
@@ -218,10 +222,11 @@ export default {
       const ret = this.board.uncover(row, col);
       const element = document.getElementById("tableBody").rows[row].cells[col];
       if (ret >= 0) {
-        element.classList.add(`bomb${ret}`, 'uncovered', 'noselect');
+        element.classList.remove('flagged');
+        element.classList.add(`bomb${ret}`, 'uncovered', 'noSelect', 'noClick');
       }
       else if (ret == -1) {
-        element.classList.add('boom', 'uncovered', 'boomRed', 'noselect');
+        element.classList.add('boom', 'uncovered', 'boomRed', 'noSelect', 'noClick');
         this.boom();
       }
       return ret;
@@ -387,6 +392,7 @@ export default {
   padding: 2px;
 }
 #optionShow {
+  -webkit-margin-start: 112.5px;
   text-align: center;
   position: absolute;
   display: inline;
@@ -405,8 +411,10 @@ export default {
   border-bottom-right-radius: 10px;
   cursor: pointer;
 }
-#optionShow:hover {
-  background: #bbb;
+@media (hover: hover) and (pointer: fine) {
+  #optionShow:hover {
+    background-color: #bbb;
+  }
 }
 #optionTab {
   visibility: visible;
@@ -440,8 +448,10 @@ export default {
   border-bottom: solid 2.5px #666;
   border-radius: 3px;
 }
-.buttonNormal:hover {
-  background: #999;
+@media (hover: hover) and (pointer: fine) {
+  .buttonNormal:hover {
+    background-color: #999;
+  }
 }
 .buttonPressed {
   border-top: solid 2.5px #666;
@@ -529,8 +539,7 @@ export default {
 .noClick {
    pointer-events: none;
 }
-.noselect {
-  pointer-events: none;
+.noSelect {
   -webkit-touch-callout: none; /* iOS Safari */
     -webkit-user-select: none; /* Safari */
      -khtml-user-select: none; /* Konqueror HTML */
